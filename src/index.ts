@@ -12,15 +12,23 @@ app.post("/api/ticket-handler", async (req, res) => {
   try {
     const { ticket_id, subject, description } = req.body;
 
-    const prompt = `You are an AI assistant. Classify this ticket into a category and priority.
+    const prompt = `You are an AI assistant. Classify this ticket into a category and priority. 
+    Additionally, write a brief two-sentence summary of the issue.
     
     Subject: ${subject}
     Description: ${description}
-  
-    Categories: Billing, Bug, Feature Request, General
+    
+    Categories: Billing, Bug, Feature Request, General  
     Priorities: Low, Normal, High, Urgent
-  
-    Respond in JSON with category and priority.`;
+    
+    Respond in the following JSON format:
+    
+    {
+      "category": "Bug",
+      "priority": "High",
+      "summary": "User is experiencing a timeout error when updating inventory. This could be due to a backend service issue."
+    }
+    `;
 
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
@@ -37,7 +45,7 @@ app.post("/api/ticket-handler", async (req, res) => {
     );
 
     const aiReply = response.data.choices[0].message.content;
-    const { category, priority } = JSON.parse(aiReply);
+    const { category, priority, summary } = JSON.parse(aiReply);
 
     await axios.put(
       `https://scout3812.zendesk.com/api/v2/tickets/${ticket_id}.json`,
@@ -47,7 +55,12 @@ app.post("/api/ticket-handler", async (req, res) => {
           priority: priority.toLowerCase(),
           assignee_id: TICKET_ASSIGNMENTS[category],
           comment: {
-            body: `Auto-tagged by GPT-4: Category is ${category}, Priority is ${priority}`,
+            body: `Auto-tagged by GPT-4:
+          
+Category: ${category}
+Priority: ${priority}
+          
+Summary: ${summary}`,
             public: false,
           },
         },
