@@ -10,7 +10,9 @@ app.use(express.json());
 
 app.post("/api/ticket-handler", async (req, res) => {
   try {
-    const { ticket_id, subject, description } = req.body;
+    const { id, subject, description } = req.body.detail;
+
+    const ticket_id = id;
 
     const prompt = `You are an AI assistant. Classify this ticket into a category and priority. 
     Additionally, write a brief two-sentence summary of the issue.
@@ -45,6 +47,7 @@ app.post("/api/ticket-handler", async (req, res) => {
     );
 
     const aiReply = response.data.choices[0].message.content;
+
     const { category, priority, summary } = JSON.parse(aiReply);
 
     await axios.put(
