@@ -48,7 +48,7 @@ app.post("/api/ticket-handler", async (req, res) => {
     const { category, priority, summary } = JSON.parse(aiReply);
 
     await axios.put(
-      `https://scout3812.zendesk.com/api/v2/tickets/${ticket_id}.json`,
+      `https://scoutai.zendesk.com/api/v2/tickets/${ticket_id}.json`,
       {
         ticket: {
           tags: [category.toLowerCase()],
